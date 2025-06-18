@@ -1,6 +1,7 @@
 #include "sensors.h"
 #include "wifiTime.h"
 #include "aws.h"
+#include "httpPOST.h"
 
 #include <math.h>
 
@@ -10,15 +11,23 @@ void publishMessage() {
   
   // Build JSON
   StaticJsonDocument<4096> doc;
+
+  // Getting Data
   doc = get_sensorsData();
 
+  // Giving timestamp and MessageID
   int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
   doc["slaveTimestamp"] = slaveTimestamp;
   doc["messageId"]      = messageCounter;
   messageCounter++;
 
-  int result = sendMQTT(doc);
-  if (result) {
+  // Sending Over HTTP
+  String resultHTTP = sendHTTP(doc);
+  Serial.println(resultHTTP);
+
+  // Sending Over MQTT
+  int resultMQTT = sendMQTT(doc);
+  if (resultMQTT) {
     Serial.println("Message published successfully.");
   } else {
     Serial.println("Failed to publish message.");
