@@ -2,7 +2,7 @@
 
 HTTPClient http;
 
-String api_url = "https://c238fcn8lf.execute-api.ap-southeast-2.amazonaws.com/WriteHTTPDynamoData";
+String api_url = "http://13.211.139.52:3000/data";
 
 String sendHTTP(StaticJsonDocument<4096> doc){
 
@@ -19,9 +19,6 @@ String sendHTTP(StaticJsonDocument<4096> doc){
   if(httpResponseCode>0){
   
     response = http.getString();                       //Get the response to the request
-  
-    Serial.println(httpResponseCode);   //Print return code
-    Serial.println(response);           //Print request answer
   
   }else{
     
