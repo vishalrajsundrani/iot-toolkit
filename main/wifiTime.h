@@ -9,11 +9,7 @@
 WiFiClientSecure net;
 PubSubClient mqttClient(net);
 
-
-
 uint64_t  startEpochOffset = 0; //
-
-
 
 void connectWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -38,4 +34,8 @@ void connectWiFi() {
   // Once synced, calculate offset
   startEpochOffset = static_cast<int64_t>(time(nullptr)) * 1000LL - (int64_t)millis();
   Serial.printf("\nEpoch offset (ms): %lld\n", startEpochOffset);
+}
+
+long getWifiStrength(){
+  return WiFi.RSSI();
 }
