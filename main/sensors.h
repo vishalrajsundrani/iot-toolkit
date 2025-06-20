@@ -36,7 +36,7 @@ void connectSensors(){
 
   // Initialize the MPU6050 sensor
   Serial.println("Initializing MPU6050...");
-  if (!mpu.begin()) {
+  while (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 sensor");
     delay(500);
   }
