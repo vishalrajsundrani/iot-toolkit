@@ -4,8 +4,10 @@
 #include "httpPOST.h"
 
 #include <math.h>
+int limit = 40;
 
-uint32_t messageCounter   = 1;
+uint32_t messageCounter = 1;
+
 
 void publishMessage() {
   
@@ -15,11 +17,16 @@ void publishMessage() {
   // Getting Data
   doc = get_sensorsData();
 
-  // Giving timestamp and MessageID
+  // Giving timestamp
   int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
   doc["slaveTimestamp"] = slaveTimestamp;
+
+  // Giving Message ID
   doc["messageId"]      = messageCounter;
   messageCounter++;
+
+  // Giving WiFi Strength
+  doc["WifiStrength(dBm)"] = getWifiStrength();
 
   // Sending Over HTTP
   String resultHTTP = sendHTTP(doc);
@@ -45,6 +52,14 @@ void setup() {
 
 void loop() {
   mqttClient.loop();
-  publishMessage();
-  delay(2000);
+  if (messageCounter < limit+1){
+    publishMessage();
+    delay(2000);
+  }
+  if (messageCounter == limit+1){
+    Serial.println();
+    Serial.println();
+    Serial.println("Limit of 20 completed, restart your device to start scan again");
+    messageCounter++;
+  }
 }
