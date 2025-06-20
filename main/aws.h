@@ -1,7 +1,3 @@
-
-
-
-
 // AWS Constants
 
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
@@ -39,6 +35,7 @@ void connectAWS() {
 
   mqttClient.setServer(AWS_IOT_ENDPOINT, 8883);
   mqttClient.setCallback(messageHandler);
+  mqttClient.setBufferSize(4096);
 
   Serial.print("Connecting to AWS IoT");
   int retries = 0;
