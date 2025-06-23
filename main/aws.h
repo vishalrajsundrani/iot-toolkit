@@ -65,6 +65,26 @@ bool sendMQTT(StaticJsonDocument<4096> doc){
     Serial.println("MQTT not connected at publish time!");
     Serial.print("MQTT state: ");
     Serial.println(mqttClient.state());
+
+    if (!mqttClient.connected()) {
+      delay(5000);
+      mqttClient.connect(THINGNAME);
+    }
+
+    if (!mqttClient.connected()) {
+      delay(5000);
+      mqttClient.connect(THINGNAME);
+    }
+
+    if (!mqttClient.connected()) {
+      delay(5000);
+      mqttClient.connect(THINGNAME);
+    }
+
+    if (!mqttClient.connected()) {
+      delay(5000);
+      mqttClient.connect(THINGNAME);
+    }
   }
 
   bool result = mqttClient.publish(AWS_IOT_PUBLISH_TOPIC, buffer);

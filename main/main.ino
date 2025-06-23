@@ -75,14 +75,11 @@ void loop() {
       keys = keys + "m";
     }
 
-    Serial.printf("\nMessage Number %d sent\n", messageCounter)
+    Serial.printf("\nMessage Number %d sent\n", messageCounter);
     publishMessage();
 
     // Printing Research Parameters
     Serial.printf("WifiStrength(dBm): %ld\n", getWifiStrength());
-
-    float downSpeed = getDownloadSpeedKbps();
-    Serial.printf("DownloadSpeed(kbps): %.2f\n", downSpeed);
 
 
     messageCounter++;
