@@ -71,7 +71,7 @@ bool sendMQTT(StaticJsonDocument<4096> doc){
 
   Serial.println("\n=== PUBLISHED PAYLOAD ===");
   Serial.println(buffer);
-  Serial.printf("Payload size: %u bytes\n", payloadSize);
+  Serial.printf("PayloadSize(bytes): %u\n", payloadSize);
   Serial.println("==========================\n");
 
   return result; 

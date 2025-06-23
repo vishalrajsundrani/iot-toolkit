@@ -11,8 +11,16 @@ String sendHTTP(StaticJsonDocument<4096> doc){
 
   http.begin(api_url);
   http.addHeader("Content-Type", "application/json");
-  int httpResponseCode = http.POST(buffer);
 
+
+  unsigned long startTime = millis();  
+  int httpResponseCode = http.POST(buffer);
+  unsigned long endTime = millis();
+
+
+  float timeSec = (endTime - startTime) / 1000.0;
+  float speedKbps = (payloadSize / 1000) / timeSec; // kbps
+  Serial.printf("\nUploadSpeed(kbps): %.2f\n", speedKbps);
   
   String response = "0";
 
