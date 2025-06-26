@@ -5,13 +5,17 @@
 
 
 #include <math.h>
-int limit = 200;
+
+int LIMIT = 20;  //Limit of Messages
+unsigned long TIMETORESENDMSGS =  60    *(1000);  //Millisecond
+int ITERATIONS = 5;
+int LOOPTIME = 2000; //Milliseconds
+
 
 uint32_t messageCounter = 1;
-
+int iteration = 1;
 StaticJsonDocument<4096> doc;
-
-String keys = "mm";
+unsigned long endMsgTime = 0;
 
 
 
@@ -24,16 +28,16 @@ void publishMessage() {
   //doc = get_sensorsData();
 
   // Giving timestamp
-  // int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
-  // doc["slaveTimestamp"] = slaveTimestamp;
+  int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
+  doc["slaveTimestamp"] = slaveTimestamp;
 
   // Giving Message ID
   //doc["messageId"]      = messageCounter;
   
 
   // Sending Over HTTP
-  String resultHTTP = sendHTTP(doc);
-  Serial.println(resultHTTP);
+  // String resultHTTP = sendHTTP(doc);
+  // Serial.println(resultHTTP);
 
   // Sending Over MQTT
   int resultMQTT = sendMQTT(doc);
@@ -48,48 +52,53 @@ void publishMessage() {
 void setup() {
   Serial.begin(115200);
 
-  connectSensors();
+  //connectSensors();
   connectWiFi();
   connectAWS();
 
-  doc["m"] = "a";
+  doc["User"] = "Basil Bhai";
+  doc["Device"] = "ESP32";
+  doc["Model"] = "WROOM-DA";
+  doc["Messagae"] = "Altaf Bhai";
 }
 
 void loop() {
-  mqttClient.loop();
-  if (messageCounter < limit + 1) {
+  //mqttClient.loop();
 
+  if (messageCounter < LIMIT + 1) {
 
-
-    if (messageCounter%20 == 0.0){
-      // Grow string up to a limit
-      String m = doc["m"] | "";
-      if (m.length() < 1024) {
-        doc["m"] = m + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-      }
-    }
-
-    if ((messageCounter+10)%20 == 0.0){
-      // Grow string up to a limit
-      doc[keys] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-      keys = keys + "m";
-    }
 
     Serial.printf("\nMessage Number %d sent\n", messageCounter);
     publishMessage();
+
+
+
+    // Print Data Payload
+    Serial.printf("PayloadSize(bytes): %u\n", sizeof(doc));
 
     // Printing Research Parameters
     Serial.printf("WifiStrength(dBm): %ld\n", getWifiStrength());
 
 
     messageCounter++;
-    delay(2000);
+    delay(LOOPTIME);
   }
 
-  if (messageCounter == limit+1){
+  if (messageCounter == LIMIT+1){
     Serial.println();
     Serial.println();
-    Serial.printf("Limit of %d completed, restart your device to start scan again", limit);
+    Serial.printf("Batch of %d is transfered, now going to iteration %d", LIMIT, iteration+1);
     messageCounter++;
+
+    endMsgTime = millis();
+  }
+
+  if (millis() > endMsgTime + TIMETORESENDMSGS && messageCounter > LIMIT && iteration < ITERATIONS){
+    messageCounter = 1;
+    iteration++;
+  }
+
+  if (iteration > ITERATIONS){
+    Serial.printf("Limit of %d iterations is completed, restart your device to start scan again", ITERATIONS);
   }
 }

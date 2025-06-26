@@ -7,22 +7,23 @@
 
 
 
-void messageHandler(char* topic, byte* payload, unsigned int length) {
-  Serial.print("MQTT Message on topic: ");
-  Serial.println(topic);
 
-  StaticJsonDocument<200> doc;
-  DeserializationError error = deserializeJson(doc, payload, length);
-  if (error) {
-    Serial.print("deserializeJson() failed: ");
-    Serial.println(error.c_str());
-    return;
-  }
+// void messageHandler(char* topic, byte* payload, unsigned int length) {
+//   Serial.print("MQTT Message on topic: ");
+//   Serial.println(topic);
 
-  const char* msg = doc["message"];
-  Serial.print("Message content: ");
-  Serial.println(msg);
-}
+//   StaticJsonDocument<200> doc;
+//   DeserializationError error = deserializeJson(doc, payload, length);
+//   if (error) {
+//     Serial.print("deserializeJson() failed: ");
+//     Serial.println(error.c_str());
+//     return;
+//   }
+
+//   const char* msg = doc["message"];
+//   Serial.print("Message content: ");
+//   Serial.println(msg);
+// }
 
 
 
@@ -34,7 +35,7 @@ void connectAWS() {
   net.setPrivateKey(AWS_CERT_PRIVATE);
 
   mqttClient.setServer(AWS_IOT_ENDPOINT, 8883);
-  mqttClient.setCallback(messageHandler);
+  //mqttClient.setCallback(messageHandler);
   mqttClient.setBufferSize(4096);
 
   Serial.print("Connecting to AWS IoT");
@@ -66,22 +67,7 @@ bool sendMQTT(StaticJsonDocument<4096> doc){
     Serial.print("MQTT state: ");
     Serial.println(mqttClient.state());
 
-    if (!mqttClient.connected()) {
-      delay(5000);
-      mqttClient.connect(THINGNAME);
-    }
-
-    if (!mqttClient.connected()) {
-      delay(5000);
-      mqttClient.connect(THINGNAME);
-    }
-
-    if (!mqttClient.connected()) {
-      delay(5000);
-      mqttClient.connect(THINGNAME);
-    }
-
-    if (!mqttClient.connected()) {
+    while (!mqttClient.connected()) {
       delay(5000);
       mqttClient.connect(THINGNAME);
     }
