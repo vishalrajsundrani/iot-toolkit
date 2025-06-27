@@ -5,6 +5,8 @@
 #define SERVER_PORT             4080
 
 
+WiFiClientSecure net;
+PubSubClient mqttClient(net);
 
 
 
@@ -36,7 +38,7 @@ void connectAWS() {
 
   mqttClient.setServer(AWS_IOT_ENDPOINT, 8883);
   //mqttClient.setCallback(messageHandler);
-  mqttClient.setBufferSize(4096);
+  mqttClient.setBufferSize(DOCSIZE);
 
   Serial.print("Connecting to AWS IoT");
   int retries = 0;
@@ -57,9 +59,9 @@ void connectAWS() {
 }
 
 
-bool sendMQTT(StaticJsonDocument<4096> doc){
+bool sendMQTT(StaticJsonDocument<DOCSIZE> doc){
 
-  char buffer[4096];
+  char buffer[DOCSIZE];
   size_t payloadSize = serializeJson(doc, buffer);
 
   if (!mqttClient.connected()) {
@@ -77,7 +79,6 @@ bool sendMQTT(StaticJsonDocument<4096> doc){
 
   Serial.println("\n=== PUBLISHED PAYLOAD ===");
   Serial.println(buffer);
-  Serial.printf("PayloadSize(bytes): %u\n", payloadSize);
   Serial.println("==========================\n");
 
   return result; 

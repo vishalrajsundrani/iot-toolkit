@@ -1,14 +1,3 @@
-#include "secret.h"
-
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <time.h>  // for configTime() and time()
-#include <PubSubClient.h>
-
-
-WiFiClientSecure net;
-PubSubClient mqttClient(net);
-
 uint64_t  startEpochOffset = 0;
 
 
