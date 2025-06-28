@@ -1,4 +1,4 @@
-
+#include <pgmspace.h>
 
 #define SECRET
 #define THINGNAME "esp32_3"                         //change this
