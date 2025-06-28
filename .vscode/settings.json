@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "compare": "cpp"
+    }
+}

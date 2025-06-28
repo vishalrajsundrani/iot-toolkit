@@ -10,22 +10,22 @@ PubSubClient mqttClient(net);
 
 
 
-// void messageHandler(char* topic, byte* payload, unsigned int length) {
-//   Serial.print("MQTT Message on topic: ");
-//   Serial.println(topic);
+void messageHandler(char* topic, byte* payload, unsigned int length) {
+  Serial.print("MQTT Message on topic: ");
+  Serial.println(topic);
 
-//   StaticJsonDocument<200> doc;
-//   DeserializationError error = deserializeJson(doc, payload, length);
-//   if (error) {
-//     Serial.print("deserializeJson() failed: ");
-//     Serial.println(error.c_str());
-//     return;
-//   }
+  StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, payload, length);
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return;
+  }
 
-//   const char* msg = doc["message"];
-//   Serial.print("Message content: ");
-//   Serial.println(msg);
-// }
+  const char* msg = doc["message"];
+  Serial.print("Message content: ");
+  Serial.println(msg);
+}
 
 
 
@@ -37,14 +37,16 @@ void connectAWS() {
   net.setPrivateKey(AWS_CERT_PRIVATE);
 
   mqttClient.setServer(AWS_IOT_ENDPOINT, 8883);
-  //mqttClient.setCallback(messageHandler);
+
+  if (RECIEVE_DATA_FROM_MQTT_SUB) mqttClient.setCallback(messageHandler);
+
   mqttClient.setBufferSize(DOCSIZE);
 
   Serial.print("Connecting to AWS IoT");
   int retries = 0;
   while (!mqttClient.connect(THINGNAME) && retries < 10) {
     Serial.print(".");
-    delay(1000);
+    delay(MQTT_DELAY_OVER_ERROR_IN_MESSAGE);
     retries++;
   }
 
@@ -70,16 +72,10 @@ bool sendMQTT(StaticJsonDocument<DOCSIZE> doc){
     Serial.println(mqttClient.state());
 
     while (!mqttClient.connected()) {
-      delay(5000);
+      delay(500);
       mqttClient.connect(THINGNAME);
     }
   }
 
-  bool result = mqttClient.publish(AWS_IOT_PUBLISH_TOPIC, buffer);
-
-  Serial.println("\n=== PUBLISHED PAYLOAD ===");
-  Serial.println(buffer);
-  Serial.println("==========================\n");
-
-  return result; 
+  return mqttClient.publish(AWS_IOT_PUBLISH_TOPIC, buffer);
 }

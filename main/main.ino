@@ -3,40 +3,69 @@
 #include "requirements.h" 
 #include "secret.h"
 #include "wifiTime.h"
-#include "aws.h"  
+
+if (SEND_MQTT_DATA || RECIEVE_DATA_FROM_MQTT_SUB) {
+  #include "aws.h"
+}
+
+if (SEND_HTTP_DATA) {
+  #include "httpPOST.h"
+}
+
+if (INCLUDE_SENSOR_DATA){
+  #include "sensors.h"
+}
 
 
-
-int LIMIT = 10;  // Number of messages per iteration
-unsigned long TIMETORESENDMSGS = 60 * 1000;  // 1 minute wait between iterations
-int ITERATIONS = 5;  // Total iterations
-int LOOPTIME = 1000;  // 1 second delay between messages
 
 uint32_t messageCounter = 1;
 int iteration = 1;
 StaticJsonDocument<DOCSIZE> doc;
 unsigned long endMsgTime = 0;
 
+char[(LIMIT/CHANGE_INCREASING_OVER_MESSAGES) + 10] m = "mm";
+
+
+
 void publishMessage() {
-  doc.clear();
+  if (!INCLUDE_DUMMY_INCREASING_DATA) doc.clear();
+
+  if (INCLUDE_SENSOR_DATA) doc = get_sensorsData();
 
   // Static fields
-  doc["User"]    = "Basil Bhai";
-  doc["Device"]  = "ESP32";
-  doc["Model"]   = "WROOM-DA";
-  doc["Message"] = "Altaf Bhai";
+  if (INCLUDE_DUMMY_STATIONARY_DATA){
+    doc["User"]    = "Basil Bhai";
+    doc["Device"]  = "ESP32";
+    doc["Model"]   = "WROOM-DA";
+    doc["Message"] = "Tariq Mumtaz is our supervisor";
+  }
 
   // Timestamp
-  int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
-  doc["slaveTimestamp"] = slaveTimestamp;
+  if (INLCUDE_MANDATORY_DATA){
+    int64_t slaveTimestamp = (int64_t)millis() + startEpochOffset;
+    doc["slaveTimestamp"] = slaveTimestamp;
+  }
 
   // Send over MQTT
-  bool resultMQTT = sendMQTT(doc);
-  Serial.println("=== MQTT Result ===");
-  if (resultMQTT){
-    Serial.println("MQTT Message Sent Successfully");
-  } else {
-    Serial.println("Error Sending MQTT Message");
+  if (SEND_MQTT_DATA){
+    bool resultMQTT = sendMQTT(doc);
+    Serial.println("=== MQTT Result ===");
+    if (resultMQTT){
+      Serial.println("MQTT Message Sent Successfully");
+    } else {
+      Serial.println("Error Sending MQTT Message");
+    }
+  }
+
+  // Send over HTTP
+  if (SEND_HTTP_DATA){
+    bool resultHTTP = sendHTTP(doc);
+    Serial.println("=== HTTP Result ===");
+    if (resultHTTP){
+      Serial.println("HTTP Message Sent Successfully");
+    } else {
+      Serial.println("Error Sending HTTP Message");
+    }
   }
   
 }
@@ -45,21 +74,46 @@ void setup() {
   Serial.begin(115200);
 
   connectWiFi();
-  connectAWS();
+
+  if (SEND_MQTT_DATA || RECIEVE_DATA_FROM_MQTT_SUB) connectAWS();
+  if (INCLUDE_SENSOR_DATA) connectSensors();
+
+
+  if (INCLUDE_DUMMY_INCREASING_DATA){
+    doc['m'] = 'a';
+  }
 }
 
 void loop() {
+
+  if (RECIEVE_DATA_FROM_MQTT_SUB) mqttClient.loop();
+
   if (messageCounter <= LIMIT) {
-    Serial.printf("\nMessage Number %d sent\n", messageCounter);  // <== Restore this
+    Serial.printf("\n\n\nMessage Number %d sending\n", messageCounter);
+
+
+    if (INCLUDE_DUMMY_INCREASING_DATA){
+      if (messageCounter%(CHANGE_INCREASING_OVER_MESSAGES*2) == 0){
+        doc['m'] = doc['m'] + ('a'*CHANGE_IN_BYTES);
+      }
+      
+      if ((messageCounter+CHANGE_INCREASING_OVER_MESSAGES)%(CHANGE_INCREASING_OVER_MESSAGES*2)){
+        m = m + ('m'*CHANGE_IN_BYTES);
+        doc[m] = 'b';
+      }
+    }
     publishMessage();
 
     // Print Payload info
     Serial.printf("PayloadSize(bytes): %u\n", measureJson(doc));
     Serial.printf("WifiStrength(dBm): %ld\n", getWifiStrength());
 
+    Serial.printf("\nMessage Number %d sent\n\n\n", messageCounter);
+
     messageCounter++;
-    delay(LOOPTIME);
-}
+
+    if (messageCounter <= LIMIT) delay(LOOPTIME);
+  }
 
 
   if (messageCounter == LIMIT + 1) {
@@ -69,14 +123,14 @@ void loop() {
     endMsgTime = millis();
   }
 
-  if (millis() > endMsgTime + TIMETORESENDMSGS && messageCounter > LIMIT && iteration < ITERATIONS) {
+  if (millis() > endMsgTime + TIMETORESENDMSGS && messageCounter > LIMIT && iteration <= ITERATIONS) {
     messageCounter = 1;
+    doc.clear();
     iteration++;
   }
 
-  if (iteration >= ITERATIONS) {
+  if (iteration > ITERATIONS) {
     Serial.printf("Limit of %d iterations completed. Restart device to start scan again.\n", ITERATIONS);
-    while (true);  // Stop the loop
   }
 }
 
