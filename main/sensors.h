@@ -1,3 +1,7 @@
+#include <DHT.h>
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 
 
 
@@ -59,7 +63,7 @@ void connectSensors(){
 
 
 
-StaticJsonDocument<4096> get_sensorsData(){
+StaticJsonDocument<DOCSIZE> get_sensorsData(){
   // Read sensors
   int   irRaw    = analogRead(IR_SENSOR_PIN);
   float distance = irRaw / 9.766;     // in cm
@@ -92,7 +96,7 @@ StaticJsonDocument<4096> get_sensorsData(){
   angleZ = atan2(accZ, sqrt(accX * accX + accY * accY)) * 180.0 / PI;
 
 
-  StaticJsonDocument<4096> doc;
+  StaticJsonDocument<DOCSIZE> doc;
   
   doc["device"]         = "ESP32_Client";
   doc["deviceID"]       = 123;

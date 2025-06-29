@@ -1,21 +1,11 @@
-//Check for MQTT
 
 #include "requirements.h" 
 #include "secret.h"
 #include "wifiTime.h"
 
-if (SEND_MQTT_DATA || RECIEVE_DATA_FROM_MQTT_SUB) {
-  #include "aws.h"
-}
-
-if (SEND_HTTP_DATA) {
-  #include "httpPOST.h"
-}
-
-if (INCLUDE_SENSOR_DATA){
-  #include "sensors.h"
-}
-
+#include "aws.h"
+#include "httpPOST.h"
+#include "sensors.h"
 
 
 uint32_t messageCounter = 1;
@@ -23,8 +13,7 @@ int iteration = 1;
 StaticJsonDocument<DOCSIZE> doc;
 unsigned long endMsgTime = 0;
 
-char[(LIMIT/CHANGE_INCREASING_OVER_MESSAGES) + 10] m = "mm";
-
+String m = "mm";
 
 
 void publishMessage() {
@@ -70,9 +59,16 @@ void publishMessage() {
   
 }
 
+String textTimes(String a, int b){
+  String result = "";
+  for (int i = 0; i < b; i++){
+    result = result + a;
+  }
+  return result;
+}
+
 void setup() {
   Serial.begin(115200);
-
   connectWiFi();
 
   if (SEND_MQTT_DATA || RECIEVE_DATA_FROM_MQTT_SUB) connectAWS();
@@ -80,7 +76,7 @@ void setup() {
 
 
   if (INCLUDE_DUMMY_INCREASING_DATA){
-    doc['m'] = 'a';
+    doc['m'] = "a";
   }
 }
 
@@ -94,12 +90,13 @@ void loop() {
 
     if (INCLUDE_DUMMY_INCREASING_DATA){
       if (messageCounter%(CHANGE_INCREASING_OVER_MESSAGES*2) == 0){
-        doc['m'] = doc['m'] + ('a'*CHANGE_IN_BYTES);
+        String temp = doc['m'];
+        doc['m'] = temp + textTimes("a",CHANGE_IN_BYTES);
       }
       
       if ((messageCounter+CHANGE_INCREASING_OVER_MESSAGES)%(CHANGE_INCREASING_OVER_MESSAGES*2)){
-        m = m + ('m'*CHANGE_IN_BYTES);
-        doc[m] = 'b';
+        m = m + textTimes("m",CHANGE_IN_BYTES);
+        doc[m] = "b";
       }
     }
     publishMessage();

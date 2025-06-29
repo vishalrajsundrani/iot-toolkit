@@ -2,7 +2,7 @@
 
 
 int MQTT_DELAY_OVER_ERROR_IN_MESSAGE = 1000; // Millisecond
-int DOCSIZE = 1024;  // Maximum data size to send adn reserve in ESP32
+#define DOCSIZE 1024  // Maximum data size to send adn reserve in ESP32
 
 // Most of ESP32 Errors came because of these two upper variables. So, tweak them (decrease DOCSIZE or increase DELAY time) to fix the issue if came.
 
@@ -32,25 +32,12 @@ String YOUR_HTTP_RESPONSE = "{}";
 
 
 
-
-
 // Do not change code dow below
 
 #include <math.h>
 
-if (SEND_HTTP_DATA){
-    #include <HTTPClient.h>
-}
-
 
 #include <ArduinoJson.h>
-
-if (INCLUDE_SENSOR_DATA){
-    #include <DHT.h>
-    #include <Wire.h>
-    #include <Adafruit_MPU6050.h>
-    #include <Adafruit_Sensor.h>
-}
 
 
 #include <WiFi.h>

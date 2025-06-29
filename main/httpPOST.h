@@ -1,8 +1,10 @@
+#include <HTTPClient.h>
+
 HTTPClient http;
 
-String sendHTTP(StaticJsonDocument<4096> doc){
+bool sendHTTP(StaticJsonDocument<DOCSIZE> doc){
 
-  char buffer[4096];
+  char buffer[DOCSIZE];
   size_t payloadSize = serializeJson(doc, buffer);
 
   http.begin(API_URL);
